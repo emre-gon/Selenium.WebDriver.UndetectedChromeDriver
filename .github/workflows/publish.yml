@@ -1,0 +1,28 @@
+name: undetected chrome publish to nuget
+on:
+  push:
+    branches:
+      - master # Default release branch
+jobs:
+  publish:
+    name: build, pack & publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # - name: Setup dotnet
+      #   uses: actions/setup-dotnet@v1
+      #   with:
+      #     dotnet-version: 3.1.200
+
+      # Publish
+      - name: publish on version change
+        id: publish_nuget
+        uses: rohith/publish-nuget@v2
+        with:
+          # Filepath of the project to be packaged, relative to root of repository
+          PROJECT_FILE_PATH: Selenium.WebDriver.UndetectedChromeDriver/Selenium.WebDriver.UndetectedChromeDriver.csproj
+          PACKAGE_NAME: Selenium.WebDriver.UndetectedChromeDriver
+
+          # API key to authenticate with NuGet server
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
