@@ -1,9 +1,9 @@
-<h3 align="center">Sl.Selenium.Extensions.Drivers</h3>
+<h3 align="center">Selenium.WebDriver.UndetectedChromeDriver</h3>
 
 <div align="center">
 
 [![Status](https://img.shields.io/badge/status-active-success.svg)]()
-[![License](https://img.shields.io/github/license/emre-gon/Sl.Selenium.Extensions.Drivers)](/LICENSE)
+[![License](https://img.shields.io/github/license/emre-gon/Selenium.WebDriver.UndetectedChromeDriver)](/LICENSE)
 [![NuGet](https://img.shields.io/nuget/v/Selenium.WebDriver.UndetectedChromeDriver.svg)](https://www.nuget.org/packages/Selenium.WebDriver.UndetectedChromeDriver)
 
 
