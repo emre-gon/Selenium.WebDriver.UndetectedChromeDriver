@@ -1,10 +1,11 @@
 ﻿using OpenQA.Selenium.Remote;
 using Selenium.Extensions;
-using Sl.Selenium.Extensions.Chrome;
+using Sl.Selenium.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -12,22 +13,27 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 {
     public class UndetectedChromeDriver : ChromeDriver
     {
-        protected UndetectedChromeDriver(string ProfileName, bool Headless)
-            : base(ProfileName, Headless)
+        protected UndetectedChromeDriver(ISet<string> DriverArguments, string ProfileName, bool Headless)
+            : base(DriverArguments, ProfileName, Headless)
         {
 
         }
 
         public static new SlDriver Instance(bool Headless = false)
         {
-            return Instance("sl_selenium_chrome");
+            return Instance("sl_selenium_chrome", Headless);
         }
 
         public static new SlDriver Instance(String ProfileName, bool Headless = false)
         {
+            return Instance(new HashSet<string>(), ProfileName, Headless);
+        }
+
+        public static new SlDriver Instance(ISet<string> DriverArguments, String ProfileName, bool Headless = false)
+        {
             if (!_openDrivers.IsOpen(SlDriverBrowserType.Chrome, ProfileName))
             {
-                UndetectedChromeDriver cDriver = new UndetectedChromeDriver(ProfileName, Headless);
+                UndetectedChromeDriver cDriver = new UndetectedChromeDriver(DriverArguments, ProfileName, Headless);
 
                 _openDrivers.OpenDriver(cDriver);
             }
@@ -115,8 +121,7 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             return "undetected_" + base.DriverName();
         }
 
-
-        protected override RemoteWebDriver createBaseDriver()
+        protected override OpenQA.Selenium.Chrome.ChromeDriver CreateBaseDriver()
         {
             var service = OpenQA.Selenium.Chrome.ChromeDriverService.CreateDefaultService(DriversFolderPath(), DriverName());
 
@@ -125,37 +130,66 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 
             service.SuppressInitialDiagnosticInformation = true;
 
-
-            var options = new OpenQA.Selenium.Chrome.ChromeOptions();
-
-            options.AddArgument("start-maximized");
-
-
-            options.AddArgument("--disable-blink-features");
+            DriverArguments.Add("start-maximized");
+            DriverArguments.Add("--disable-blink-features");
             //options.AddArgument("--incognito");
-            options.AddArgument("--disable-blink-features=AutomationControlled");
-            options.AddExcludedArgument("enable-automation");
-            options.AddExcludedArguments(new List<string>() { "enable-automation" });
-            options.AddAdditionalCapability("useAutomationExtension", false);
-            options.AddArguments("disable-infobars");
-
+            DriverArguments.Add("--disable-blink-features=AutomationControlled");
+            DriverArguments.Add("disable-infobars");
 
             if (this.Headless)
             {
-                options.AddArguments("headless");
+                DriverArguments.Add("headless");
+            }
+            else
+            {
+                DriverArguments.Remove("headless");
+            }
+
+            DriverArguments.Add("--no-default-browser-check");
+            DriverArguments.Add("--no-first-run");
+
+
+            HashSet<string> argumentKeys = new HashSet<string>(DriverArguments.Select(f => f.Split('=')[0]));
+
+
+            if (!argumentKeys.Contains("--remote-debugging-host"))
+            {
+                DriverArguments.Add("--remote-debugging-host=127.0.0.1");
             }
 
 
-            options.AddArgument("--no-default-browser-check");
-            options.AddArgument("--no-first-run");
+            if (!argumentKeys.Contains("--remote-debugging-port"))
+            {
+                DriverArguments.Add("--remote-debugging-port=58164");
+            }
+
+
+
+            if (!argumentKeys.Contains("--log-level"))
+            {
+                DriverArguments.Add("--log-level=0");
+            }
+
+            var options = new OpenQA.Selenium.Chrome.ChromeOptions();
+            foreach (var arg in DriverArguments)
+            {
+                options.AddArgument(arg);
+            }
+
+
+
+            options.AddExcludedArgument("enable-automation");
+            options.AddExcludedArguments(new List<string>() { "enable-automation" });
+            options.AddAdditionalCapability("useAutomationExtension", false);
 
 
             AddProfileArgumentToBaseDriver(options);
+
             var driver = new OpenQA.Selenium.Chrome.ChromeDriver(service, options);
 
             return driver;
-
         }
+
 
         protected override void DownloadLatestDriver()
         {

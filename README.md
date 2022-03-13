@@ -1,13 +1,9 @@
-<h3 align="center">Selenium.WebDriver.UndetectedChromeDriver</h3>
-
-<div align="center">
+# Selenium.WebDriver.UndetectedChromeDriver
 
 [![Status](https://img.shields.io/badge/status-active-success.svg)]()
 [![License](https://img.shields.io/github/license/emre-gon/Selenium.WebDriver.UndetectedChromeDriver)](/LICENSE)
 [![NuGet](https://img.shields.io/nuget/v/Selenium.WebDriver.UndetectedChromeDriver.svg)](https://www.nuget.org/packages/Selenium.WebDriver.UndetectedChromeDriver)
 
-
-</div>
 
 ---
 
@@ -29,4 +25,6 @@ using (var driver = UndetectedChromeDriver.Instance("profile_name"))
 
 ## Issues
 
-Looking for an equivalent of Python b'string' regex replace for driver binary patching. It was still able to pass some systems though.
+Looking for an equivalent of Python b'string' regex replace for driver binary patching.
+
+Non patched driver was still able to pass systems though.
