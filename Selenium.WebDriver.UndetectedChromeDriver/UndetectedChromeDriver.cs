@@ -196,44 +196,37 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             base.DownloadLatestDriver();
 
 
-
             //string rawChromeDriverPath = DriversFolderPath() + "/" + base.DriverName();
-            //File.Move(this.DriverPath(), rawChromeDriverPath);
 
+            //if (!File.Exists(rawChromeDriverPath))
+            //{
+            //    base.DownloadLatestDriver();
+            //    File.Move(this.DriverPath(), rawChromeDriverPath);
+            //}
 
             //int cdcSize = 22;
             //string newCdc = randomCdc(cdcSize);
 
 
-
-            //using (BinaryReader reader = new BinaryReader(File.OpenRead(rawChromeDriverPath)))
+            //using (StreamReader reader = new StreamReader(rawChromeDriverPath, Encoding.GetEncoding(1251)))
+            //using (StreamWriter writer = new StreamWriter(this.DriverPath(), false, Encoding.GetEncoding(1251)))
             //{
-            //    using(var memStream = new MemoryStream())
+            //    string line;
+
+            //    int lineIndex = 0;
+
+            //    while((line = reader.ReadLine()) != null)
             //    {
-            //        reader.BaseStream.CopyTo(memStream);
-
-            //        var allBytes = memStream.ToArray();
-
-
-            //        using (BinaryWriter writer = new BinaryWriter(File.OpenWrite(this.DriverPath())))
+            //        if(lineIndex > 0)
             //        {
-
-            //            var asciStr = Encoding.ASCII.GetString(allBytes);
-
-            //            string newContent = Regex.Replace(asciStr, "cdc_.{" + cdcSize + "}", newCdc);
-
-
-            //            var newBytes = Encoding.ASCII.GetBytes(newContent);
-
-            //            writer.Write(newBytes);
+            //            writer.Write("\n");
             //        }
+            //        string newline = Regex.Replace(line, "cdc_.{" + cdcSize + "}", newCdc);
+
+            //        writer.Write(newline);
+            //        lineIndex++;
             //    }
             //}
-
-
-
-            //string newContent = Regex.Replace(content, "cdc_.{" + cdcSize + "}", newCdc);
-
         }
 
         private static string randomCdc(int size)
