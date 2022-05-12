@@ -11,7 +11,7 @@ Uses Sl.Selenium.Extensions</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/emre-gon/Selenium.WebDriver.UndetectedChromeDriver</RepositoryUrl>
     <PackageTags>selenium;automation;chrome</PackageTags>
-    <Version>1.3.4</Version>
+    <Version>1.3.5</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +22,7 @@ Uses Sl.Selenium.Extensions</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Sl.Selenium.Extensions.Chrome" Version="1.3.4" />
+    <PackageReference Include="Sl.Selenium.Extensions.Chrome" Version="1.3.5" />
   </ItemGroup>
 
 </Project>

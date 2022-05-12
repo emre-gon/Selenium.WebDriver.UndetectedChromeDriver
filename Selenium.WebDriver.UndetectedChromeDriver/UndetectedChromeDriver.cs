@@ -13,8 +13,8 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 {
     public class UndetectedChromeDriver : ChromeDriver
     {
-        protected UndetectedChromeDriver(ISet<string> DriverArguments, string ProfileName, bool Headless)
-            : base(DriverArguments, ProfileName, Headless)
+        protected UndetectedChromeDriver(ISet<string> DriverArguments, ISet<string> ExcludedArguments, string ProfileName, bool Headless)
+            : base(DriverArguments, ExcludedArguments, ProfileName, Headless)
         {
 
         }
@@ -31,9 +31,14 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 
         public static new SlDriver Instance(ISet<string> DriverArguments, String ProfileName, bool Headless = false)
         {
+            return Instance(DriverArguments, new HashSet<string>(), ProfileName, Headless);
+        }
+
+        public static new SlDriver Instance(ISet<string> DriverArguments, ISet<string> ExcludedArguments, String ProfileName, bool Headless = false)
+        {
             if (!_openDrivers.IsOpen(SlDriverBrowserType.Chrome, ProfileName))
             {
-                UndetectedChromeDriver cDriver = new UndetectedChromeDriver(DriverArguments, ProfileName, Headless);
+                UndetectedChromeDriver cDriver = new UndetectedChromeDriver(DriverArguments, ExcludedArguments, ProfileName, Headless);
 
                 _openDrivers.OpenDriver(cDriver);
             }
@@ -171,6 +176,7 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             }
 
             var options = new OpenQA.Selenium.Chrome.ChromeOptions();
+
             foreach (var arg in DriverArguments)
             {
                 options.AddArgument(arg);
@@ -182,6 +188,10 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             options.AddExcludedArguments(new List<string>() { "enable-automation" });
             options.AddAdditionalCapability("useAutomationExtension", false);
 
+            foreach (var excluded in ExcludedArguments)
+            {
+                options.AddExcludedArgument(excluded);
+            }
 
             AddProfileArgumentToBaseDriver(options);
 
