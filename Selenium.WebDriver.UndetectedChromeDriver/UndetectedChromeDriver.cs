@@ -205,39 +205,36 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
         {
             base.DownloadLatestDriver();
 
+            #region patcher
+            int cdcSize = 26;
+            string newCdc = randomCdc(cdcSize);
+            using (FileStream stream = new FileStream(this.DriverPath(), FileMode.Open, FileAccess.ReadWrite))
+            {
+                var buffer = new byte[1];
+                var str = new StringBuilder("....");
 
-            //string rawChromeDriverPath = DriversFolderPath() + "/" + base.DriverName();
+                var read = 0;
+                while (true)
+                {
+                    read = stream.Read(buffer, 0, buffer.Length);
+                    if (read == 0)
+                        break;
 
-            //if (!File.Exists(rawChromeDriverPath))
-            //{
-            //    base.DownloadLatestDriver();
-            //    File.Move(this.DriverPath(), rawChromeDriverPath);
-            //}
+                    str.Remove(0, 1);
+                    str.Append((char)buffer[0]);
 
-            //int cdcSize = 22;
-            //string newCdc = randomCdc(cdcSize);
-
-
-            //using (StreamReader reader = new StreamReader(rawChromeDriverPath, Encoding.GetEncoding(1251)))
-            //using (StreamWriter writer = new StreamWriter(this.DriverPath(), false, Encoding.GetEncoding(1251)))
-            //{
-            //    string line;
-
-            //    int lineIndex = 0;
-
-            //    while((line = reader.ReadLine()) != null)
-            //    {
-            //        if(lineIndex > 0)
-            //        {
-            //            writer.Write("\n");
-            //        }
-            //        string newline = Regex.Replace(line, "cdc_.{" + cdcSize + "}", newCdc);
-
-            //        writer.Write(newline);
-            //        lineIndex++;
-            //    }
-            //}
+                    if (str.ToString() == "cdc_")
+                    {
+                        stream.Seek(-4, SeekOrigin.Current);
+                        var bytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(newCdc);
+                        stream.Write(bytes, 0, bytes.Length);
+                    }
+                }
+            }
+            #endregion
         }
+
+
 
         private static string randomCdc(int size)
         {

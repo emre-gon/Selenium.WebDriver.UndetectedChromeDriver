@@ -22,9 +22,3 @@ using (var driver = UndetectedChromeDriver.Instance("profile_name"))
 
 
 ```
-
-## Issues
-
-Looking for an equivalent of Python b'string' regex replace for driver binary patching.
-
-Non patched driver was still able to pass systems though.
