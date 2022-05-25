@@ -130,14 +130,12 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
         {
             var service = OpenQA.Selenium.Chrome.ChromeDriverService.CreateDefaultService(DriversFolderPath(), DriverName());
 
-
             service.HostName = "127.0.0.1";
 
             service.SuppressInitialDiagnosticInformation = true;
 
             DriverArguments.Add("start-maximized");
             DriverArguments.Add("--disable-blink-features");
-            //options.AddArgument("--incognito");
             DriverArguments.Add("--disable-blink-features=AutomationControlled");
             DriverArguments.Add("disable-infobars");
 
@@ -155,20 +153,6 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 
 
             HashSet<string> argumentKeys = new HashSet<string>(DriverArguments.Select(f => f.Split('=')[0]));
-
-
-            if (!argumentKeys.Contains("--remote-debugging-host"))
-            {
-                DriverArguments.Add("--remote-debugging-host=127.0.0.1");
-            }
-
-
-            if (!argumentKeys.Contains("--remote-debugging-port"))
-            {
-                DriverArguments.Add("--remote-debugging-port=58164");
-            }
-
-
 
             if (!argumentKeys.Contains("--log-level"))
             {
