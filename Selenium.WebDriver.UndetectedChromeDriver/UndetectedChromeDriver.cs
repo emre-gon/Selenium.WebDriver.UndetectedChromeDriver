@@ -4,6 +4,7 @@ using Sl.Selenium.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,28 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             : base(DriverArguments, ExcludedArguments, ProfileName, Headless)
         {
 
+        }
+
+
+        private readonly static string[] ProcessNames = { "chrome", "chromedriver", "undetected_chromedriver" };
+        public static new void KillAllChromeProcesses()
+        {
+            foreach (var name in ProcessNames)
+            {
+                foreach (var process in Process.GetProcessesByName(name))
+                {
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch
+                    {
+                        //ignore errors
+                    }
+                }
+            }
+
+            SlDriver.ClearDrivers(SlDriverBrowserType.Chrome);
         }
 
         public static new SlDriver Instance(bool Headless = false)
@@ -169,7 +192,6 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 
 
             options.AddExcludedArgument("enable-automation");
-            options.AddExcludedArguments(new List<string>() { "enable-automation" });
             options.AddAdditionalCapability("useAutomationExtension", false);
 
             foreach (var excluded in ExcludedArguments)
@@ -184,34 +206,37 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             return driver;
         }
 
-
+        public static bool ENABLE_PATCHER = true;
         protected override void DownloadLatestDriver()
         {
             base.DownloadLatestDriver();
 
             #region patcher
-            int cdcSize = 26;
-            string newCdc = randomCdc(cdcSize);
-            using (FileStream stream = new FileStream(this.DriverPath(), FileMode.Open, FileAccess.ReadWrite))
+            if (ENABLE_PATCHER)
             {
-                var buffer = new byte[1];
-                var str = new StringBuilder("....");
-
-                var read = 0;
-                while (true)
+                int cdcSize = 26;
+                string newCdc = randomCdc(cdcSize);
+                using (FileStream stream = new FileStream(this.DriverPath(), FileMode.Open, FileAccess.ReadWrite))
                 {
-                    read = stream.Read(buffer, 0, buffer.Length);
-                    if (read == 0)
-                        break;
+                    var buffer = new byte[1];
+                    var str = new StringBuilder("....");
 
-                    str.Remove(0, 1);
-                    str.Append((char)buffer[0]);
-
-                    if (str.ToString() == "cdc_")
+                    var read = 0;
+                    while (true)
                     {
-                        stream.Seek(-4, SeekOrigin.Current);
-                        var bytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(newCdc);
-                        stream.Write(bytes, 0, bytes.Length);
+                        read = stream.Read(buffer, 0, buffer.Length);
+                        if (read == 0)
+                            break;
+
+                        str.Remove(0, 1);
+                        str.Append((char)buffer[0]);
+
+                        if (str.ToString() == "cdc_")
+                        {
+                            stream.Seek(-4, SeekOrigin.Current);
+                            var bytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(newCdc);
+                            stream.Write(bytes, 0, bytes.Length);
+                        }
                     }
                 }
             }
@@ -222,7 +247,7 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 
         private static string randomCdc(int size)
         {
-            Random random = new Random();
+            Random random = new Random((int)DateTime.Now.Ticks);
 
             const string chars = "abcdefghijklmnopqrstuvwxyz";
 
