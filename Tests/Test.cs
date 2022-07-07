@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using Selenium.WebDriver.UndetectedChromeDriver;
 using System.IO;
+using System.Threading;
 
 namespace Tests
 {
@@ -12,8 +13,8 @@ namespace Tests
         public void Setup()
         {
             UndetectedChromeDriver.KillAllChromeProcesses();
-            
-            if(File.Exists(undetected_chromedriver_path))
+
+            if (File.Exists(undetected_chromedriver_path))
                 File.Delete("ChromeDrivers/undetected_chromedriver.exe");
         }
 
@@ -34,9 +35,9 @@ namespace Tests
             {
                 driver.GoTo("https://nowsecure.nl");
 
-                driver.RandomWait(5, 6);
+                driver.RandomWait(5, 7);
 
-                Assert.Equals(driver.GetTextOf("h1"), "OH YEAH, you passed!");
+                Assert.AreEqual(driver.GetTextOf("h1"), "OH YEAH, you passed!");
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium.Remote;
+﻿using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Remote;
 using Selenium.Extensions;
 using Sl.Selenium.Extensions;
 using System;
@@ -12,7 +13,7 @@ using System.Text.RegularExpressions;
 
 namespace Selenium.WebDriver.UndetectedChromeDriver
 {
-    public class UndetectedChromeDriver : ChromeDriver
+    public class UndetectedChromeDriver : Sl.Selenium.Extensions.ChromeDriver
     {
         protected UndetectedChromeDriver(ISet<string> DriverArguments, ISet<string> ExcludedArguments, string ProfileName, bool Headless)
             : base(DriverArguments, ExcludedArguments, ProfileName, Headless)
@@ -75,7 +76,7 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 
             if (webDriverResult != null)
             {
-                BaseDriver.ExecuteChromeCommand("Page.addScriptToEvaluateOnNewDocument",
+                BaseDriver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument",
                     new Dictionary<string, object>()
                     {
                         {"source", @"
@@ -99,7 +100,7 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             var userAgentString = (string)this.ExecuteScript("return navigator.userAgent");
 
 
-            BaseDriver.ExecuteChromeCommand("Network.setUserAgentOverride",
+            BaseDriver.ExecuteCdpCommand("Network.setUserAgentOverride",
                 new Dictionary<string, object>()
                 {
                         {"userAgent", userAgentString.Replace("Headless","")}
@@ -122,7 +123,7 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 
             if (scriptResult != null && ((ReadOnlyCollection<object>)scriptResult).Count > 0)
             {
-                BaseDriver.ExecuteChromeCommand("Page.addScriptToEvaluateOnNewDocument",
+                BaseDriver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument",
 
                     new Dictionary<string, object>()
                     {
@@ -157,49 +158,25 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 
             service.SuppressInitialDiagnosticInformation = true;
 
-            DriverArguments.Add("start-maximized");
-            DriverArguments.Add("--disable-blink-features");
-            DriverArguments.Add("--disable-blink-features=AutomationControlled");
-            DriverArguments.Add("disable-infobars");
 
-            if (this.Headless)
-            {
-                DriverArguments.Add("headless");
-            }
-            else
-            {
-                DriverArguments.Remove("headless");
-            }
+            ChromeOptions options = new ChromeOptions();
 
-            DriverArguments.Add("--no-default-browser-check");
-            DriverArguments.Add("--no-first-run");
+            options.AddArgument("start-maximized");
 
 
-            HashSet<string> argumentKeys = new HashSet<string>(DriverArguments.Select(f => f.Split('=')[0]));
-
-            if (!argumentKeys.Contains("--log-level"))
-            {
-                DriverArguments.Add("--log-level=0");
-            }
-
-            var options = new OpenQA.Selenium.Chrome.ChromeOptions();
-
-            foreach (var arg in DriverArguments)
-            {
-                options.AddArgument(arg);
-            }
-
-
-
+            options.AddArgument("--disable-blink-features");
+            //options.AddArgument("--incognito");
+            options.AddArgument("--disable-blink-features=AutomationControlled");
             options.AddExcludedArgument("enable-automation");
-            options.AddAdditionalCapability("useAutomationExtension", false);
+            options.AddExcludedArguments(new List<string>() { "enable-automation" });
+            options.AddAdditionalChromeOption("useAutomationExtension", false);
+            options.AddArguments("disable-infobars");
 
-            foreach (var excluded in ExcludedArguments)
-            {
-                options.AddExcludedArgument(excluded);
-            }
 
-            AddProfileArgumentToBaseDriver(options);
+
+
+            options.AddArgument("--no-default-browser-check");
+            options.AddArgument("--no-first-run");
 
             var driver = new OpenQA.Selenium.Chrome.ChromeDriver(service, options);
 
@@ -214,35 +191,53 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             #region patcher
             if (ENABLE_PATCHER)
             {
-                int cdcSize = 26;
-                string newCdc = randomCdc(cdcSize);
-                using (FileStream stream = new FileStream(this.DriverPath(), FileMode.Open, FileAccess.ReadWrite))
-                {
-                    var buffer = new byte[1];
-                    var str = new StringBuilder("....");
-
-                    var read = 0;
-                    while (true)
-                    {
-                        read = stream.Read(buffer, 0, buffer.Length);
-                        if (read == 0)
-                            break;
-
-                        str.Remove(0, 1);
-                        str.Append((char)buffer[0]);
-
-                        if (str.ToString() == "cdc_")
-                        {
-                            stream.Seek(-4, SeekOrigin.Current);
-                            var bytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(newCdc);
-                            stream.Write(bytes, 0, bytes.Length);
-                        }
-                    }
-                }
+                PatchDriver();  
             }
             #endregion
         }
 
+        private void PatchDriver()
+        {
+            string newCdc = randomCdc(26);
+            using (FileStream stream = new FileStream(this.DriverPath(), FileMode.Open, FileAccess.ReadWrite))
+            {
+                var buffer = new byte[1];
+                var str = new StringBuilder("....");
+
+                var read = 0;
+                while (true)
+                {
+                    read = stream.Read(buffer, 0, buffer.Length);
+                    if (read == 0)
+                        break;
+
+                    str.Remove(0, 1);
+                    str.Append((char)buffer[0]);
+
+                    if (str.ToString() == "cdc_")
+                    {
+                        stream.Seek(-4, SeekOrigin.Current);
+                        var bytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(newCdc);
+                        stream.Write(bytes, 0, bytes.Length);
+                    }
+                }
+            }
+        }
+
+
+
+        private string genRandomCdc()
+        {
+            var chars = "abcdefghijklmnopqrstuvwxyz";
+            var random = new Random();
+            var cdc = Enumerable.Repeat(chars, 26)
+                .Select(s => s[random.Next(s.Length)]).ToArray();
+            for (var i = 4; i <= 6; i++)
+                cdc[cdc.Length - i] = char.ToUpper(cdc[cdc.Length - i]);
+            cdc[2] = cdc[0];
+            cdc[3] = '_';
+            return new string(cdc);
+        }
 
 
         private static string randomCdc(int size)
@@ -257,6 +252,9 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             {
                 buffer[i] = chars[random.Next(chars.Length)];
             }
+
+            buffer[2] = buffer[0];
+            buffer[3] = '_';
             return new string(buffer);
         }
 
