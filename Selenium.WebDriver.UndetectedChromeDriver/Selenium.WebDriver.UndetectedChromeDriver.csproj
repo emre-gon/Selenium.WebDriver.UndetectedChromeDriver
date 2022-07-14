@@ -6,12 +6,12 @@
     <Authors>emre-gon</Authors>
     <Copyright>2022</Copyright>
     <Description>Undetected Chrome Driver 
-Uses Sl.Selenium.Extensions</Description>
+Uses Sl.Selenium.Extensions, Automatically downloads latest ChromeDriver</Description>
     <PackageProjectUrl>https://github.com/emre-gon/Selenium.WebDriver.UndetectedChromeDriver</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/emre-gon/Selenium.WebDriver.UndetectedChromeDriver</RepositoryUrl>
     <PackageTags>selenium;automation;chrome</PackageTags>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
