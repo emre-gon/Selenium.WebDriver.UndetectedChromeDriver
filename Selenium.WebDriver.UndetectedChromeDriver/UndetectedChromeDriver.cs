@@ -2,6 +2,7 @@
 using OpenQA.Selenium.Remote;
 using Selenium.Extensions;
 using Sl.Selenium.Extensions;
+using Sl.Selenium.Extensions.Chrome;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,8 +16,8 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 {
     public class UndetectedChromeDriver : Sl.Selenium.Extensions.ChromeDriver
     {
-        protected UndetectedChromeDriver(ISet<string> DriverArguments, ISet<string> ExcludedArguments, string ProfileName, bool Headless)
-            : base(DriverArguments, ExcludedArguments, ProfileName, Headless)
+        protected UndetectedChromeDriver(ChromeDriverParameters args)
+            : base(args)
         {
 
         }
@@ -60,14 +61,27 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 
         public static new SlDriver Instance(ISet<string> DriverArguments, ISet<string> ExcludedArguments, String ProfileName, bool Headless = false)
         {
-            if (!_openDrivers.IsOpen(SlDriverBrowserType.Chrome, ProfileName))
+            var parameters = new ChromeDriverParameters()
             {
-                UndetectedChromeDriver cDriver = new UndetectedChromeDriver(DriverArguments, ExcludedArguments, ProfileName, Headless);
+                DriverArguments = DriverArguments,
+                ExcludedArguments = ExcludedArguments,
+                Headless = Headless,
+                ProfileName = ProfileName
+            };
+
+            return Instance(parameters);
+        }
+
+
+        public static new SlDriver Instance(ChromeDriverParameters args)
+        {
+            if (!_openDrivers.IsOpen(SlDriverBrowserType.Chrome, args.ProfileName))
+            {
+                UndetectedChromeDriver cDriver = new UndetectedChromeDriver(args);
 
                 _openDrivers.OpenDriver(cDriver);
             }
-
-            return _openDrivers.GetDriver(SlDriverBrowserType.Chrome, ProfileName);
+            return _openDrivers.GetDriver(SlDriverBrowserType.Chrome, args.ProfileName);
         }
 
         public override void GoTo(string URL)
@@ -195,16 +209,21 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             options.AddExcludedArgument("enable-automation");
             options.AddAdditionalChromeOption("useAutomationExtension", false);
 
-            foreach (var excluded in ExcludedArguments)
+            foreach (var excluded in ChromeDriverParameters.ExcludedArguments)
             {
                 options.AddExcludedArgument(excluded);
             }
 
             AddProfileArgumentToBaseDriver(options);
 
-            var driver = new OpenQA.Selenium.Chrome.ChromeDriver(service, options);
-
-            return driver;
+            if (ChromeDriverParameters.Timeout != default)
+            {
+                return new OpenQA.Selenium.Chrome.ChromeDriver(service, options, ChromeDriverParameters.Timeout);
+            }
+            else
+            {
+                return new OpenQA.Selenium.Chrome.ChromeDriver(service, options);
+            }
         }
 
         public static bool ENABLE_PATCHER = true;
