@@ -17,8 +17,6 @@ Usage:
 ```cs
 using (var driver = UndetectedChromeDriver.Instance("profile_name"))
 {
-    driver.GoTo("https://google.com")
+    driver.GoTo("https://google.com");
 }
-
-
 ```
