@@ -1,5 +1,7 @@
 using NUnit.Framework;
 using Selenium.WebDriver.UndetectedChromeDriver;
+using Sl.Selenium.Extensions.Chrome;
+using System;
 using System.IO;
 using System.Threading;
 
@@ -31,13 +33,19 @@ namespace Tests
         public void Test_nowsecure_nl()
         {
             UndetectedChromeDriver.ENABLE_PATCHER = true;
-            using (var driver = UndetectedChromeDriver.Instance())
+
+            var aprams = new ChromeDriverParameters()
+            {
+                Timeout = TimeSpan.FromSeconds(10)
+            };
+
+            using (var driver = UndetectedChromeDriver.Instance(aprams))
             {
                 driver.GoTo("https://nowsecure.nl");
 
                 driver.RandomWait(5, 7);
 
-                Assert.AreEqual(driver.GetTextOf("h1"), "OH YEAH, you passed!");
+                Assert.AreEqual("OH YEAH, you passed!", driver.GetTextOf("h1"));
             }
         }
     }

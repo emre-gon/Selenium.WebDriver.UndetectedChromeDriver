@@ -75,6 +75,15 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
 
         public static new SlDriver Instance(ChromeDriverParameters args)
         {
+            if(args.DriverArguments == null)
+                args.DriverArguments = new HashSet<string>();
+
+            if(args.ExcludedArguments == null)
+                args.ExcludedArguments = new HashSet<string>();
+
+            if (args.ProfileName == null)
+                args.ProfileName = "sl_selenium_chrome";
+
             if (!_openDrivers.IsOpen(SlDriverBrowserType.Chrome, args.ProfileName))
             {
                 UndetectedChromeDriver cDriver = new UndetectedChromeDriver(args);
