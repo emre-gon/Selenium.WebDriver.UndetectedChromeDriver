@@ -93,6 +93,7 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             return _openDrivers.GetDriver(SlDriverBrowserType.Chrome, args.ProfileName);
         }
 
+
         public override void GoTo(string URL)
         {
             var webDriverResult = this.ExecuteScript("return navigator.webdriver");
@@ -173,6 +174,28 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
             return "undetected_" + base.DriverName();
         }
 
+        public static SlDriver Instance(string ProfileName, ChromeOptions ChromeOptions)
+        {
+            var driver = (UndetectedChromeDriver)Instance(ProfileName);
+            driver.ChromeOptions = ChromeOptions;
+            return driver;
+        }
+
+
+        public static SlDriver Instance(string ProfileName, ChromeOptions ChromeOptions, TimeSpan Timeout)
+        {
+            ChromeDriverParameters cdp = new ChromeDriverParameters() { 
+                ProfileName = ProfileName,
+                Timeout = Timeout 
+            };
+            var driver = (UndetectedChromeDriver)Instance(cdp);
+            driver.ChromeOptions = ChromeOptions;
+            return driver;
+        }
+
+
+        public ChromeOptions ChromeOptions { get; private set; }
+
         protected override OpenQA.Selenium.Chrome.ChromeDriver CreateBaseDriver()
         {
             var service = OpenQA.Selenium.Chrome.ChromeDriverService.CreateDefaultService(DriversFolderPath(), DriverName());
@@ -206,32 +229,35 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
                 DriverArguments.Add("--log-level=0");
             }
 
-            var options = new OpenQA.Selenium.Chrome.ChromeOptions();
-
+            if(ChromeOptions == null)
+            {
+                ChromeOptions = new ChromeOptions();
+            }
+            
             foreach (var arg in DriverArguments)
             {
-                options.AddArgument(arg);
+                ChromeOptions.AddArgument(arg);
             }
 
 
 
-            options.AddExcludedArgument("enable-automation");
-            options.AddAdditionalChromeOption("useAutomationExtension", false);
+            ChromeOptions.AddExcludedArgument("enable-automation");
+            ChromeOptions.AddAdditionalChromeOption("useAutomationExtension", false);
 
             foreach (var excluded in ChromeDriverParameters.ExcludedArguments)
             {
-                options.AddExcludedArgument(excluded);
+                ChromeOptions.AddExcludedArgument(excluded);
             }
 
-            AddProfileArgumentToBaseDriver(options);
+            AddProfileArgumentToBaseDriver(ChromeOptions);
 
             if (ChromeDriverParameters.Timeout != default)
             {
-                return new OpenQA.Selenium.Chrome.ChromeDriver(service, options, ChromeDriverParameters.Timeout);
+                return new OpenQA.Selenium.Chrome.ChromeDriver(service, ChromeOptions, ChromeDriverParameters.Timeout);
             }
             else
             {
-                return new OpenQA.Selenium.Chrome.ChromeDriver(service, options);
+                return new OpenQA.Selenium.Chrome.ChromeDriver(service, ChromeOptions);
             }
         }
 
