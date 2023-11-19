@@ -11,22 +11,34 @@ namespace Tests
     {
 
         const string undetected_chromedriver_path = "ChromeDrivers/undetected_chromedriver.exe";
-        [SetUp]
-        public void Setup()
+
+        private void killAndDeleteDriver()
         {
             UndetectedChromeDriver.KillAllChromeProcesses();
 
-            if (File.Exists(undetected_chromedriver_path))
-                File.Delete("ChromeDrivers/undetected_chromedriver.exe");
+            FileInfo finFo = new FileInfo(undetected_chromedriver_path);
+            finFo.Directory.Create();
+            foreach (DirectoryInfo di in finFo.Directory.GetDirectories())
+            {
+                di.Delete(true);
+            }
+
+            foreach (FileInfo fi in finFo.Directory.GetFiles())
+            {
+                fi.Delete();
+            }
+
+        }
+        [SetUp]
+        public void Setup()
+        {
+            killAndDeleteDriver();
         }
 
         [TearDown]
         public void TearDown()
         {
-            UndetectedChromeDriver.KillAllChromeProcesses();
-
-            if (File.Exists(undetected_chromedriver_path))
-                File.Delete("ChromeDrivers/undetected_chromedriver.exe");
+            killAndDeleteDriver();
         }
 
         [Test]
@@ -43,7 +55,7 @@ namespace Tests
             {
                 driver.GoTo("https://nowsecure.nl");
 
-                driver.RandomWait(5, 7);
+                driver.Wait(300);
 
                 Assert.AreEqual("OH YEAH, you passed!", driver.GetTextOf("h1"));
             }
